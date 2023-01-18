@@ -55,6 +55,18 @@
 	      <artifactId>springdoc-openapi-ui</artifactId>
 	      <version>1.6.14</version>
 	   </dependency>
+	   <dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-oauth2-client</artifactId>
+	    </dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-oauth2-jose</artifactId>
+	    </dependency>
 	</dependencies>
 	<build>
 		<finalName>user-crud-jdbc</finalName>
