@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.usercrudjdbc.exception.BadRequestException;
@@ -22,8 +23,11 @@ public class UserService {
     public User create(UserDto user) {
     	User newUser = user.toEntity();
     	validateEmail(user.getEmail());
+    	String encodedPassword = encryptPassword(user.getPassword());
+        newUser.setPassword(encodedPassword);
         return userRepository.save(newUser);
     }
+
 
 	private void validateEmail(String email) {
 		if (userRepository.existsByEmail(email)) {
@@ -51,7 +55,13 @@ public class UserService {
     	validateEmail(userDto.getEmail());
     	user.setEmail(userDto.getEmail());
     	user.setName(userDto.getName());
-    	user.setPassword(userDto.getPassword());
+    	user.setPassword(encryptPassword(userDto.getPassword()));
         return userRepository.update(user);
+    }
+    
+    private String encryptPassword(String password) {
+    	BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    	String encodedPassword = passwordEncoder.encode(password);
+    	return encodedPassword;
     }
 }
