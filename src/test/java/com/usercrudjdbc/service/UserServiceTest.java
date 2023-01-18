@@ -2,6 +2,9 @@ package com.usercrudjdbc.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.usercrudjdbc.exception.BadRequestException;
 import com.usercrudjdbc.exception.NotFoundException;
@@ -31,21 +35,28 @@ public class UserServiceTest {
 	private UserService userService;
 
 	@Test
-	void create() {
-		UserDto userDto = new UserDto("name", "email@email.com", "password");
-		User user = userDto.toEntity();
-		when(userRepository.save(user)).thenReturn(user);
-		User returnedUser = userService.create(userDto);
-		assertEquals(user, returnedUser);
-		verify(userRepository, times(1)).save(user);
-	}
+    void testCreate() {
+        UserDto userDto = new UserDto("name", "email@email.com", "password");
+        User newUser = userDto.toEntity();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+        newUser.setPassword(encodedPassword);
 
-	@Test
-	void create_whenEmailIsAlreadyUsed_throwBadRequestException() {
-		UserDto userDto = new UserDto("name", "email@email.com", "password");
-		when(userRepository.existsByEmail(userDto.getEmail())).thenReturn(true);
-		assertThrows(BadRequestException.class, () -> userService.create(userDto));
-	}
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(newUser);
+
+        User returnedUser = userService.create(userDto);
+        assertEquals(newUser, returnedUser);
+    }
+
+    @Test
+    void testCreate_EmailAlreadyExists() {
+        UserDto userDto = new UserDto("name", "email@email.com", "password");
+        when(userRepository.existsByEmail("email@email.com")).thenReturn(true);
+        assertThrows(BadRequestException.class, () -> userService.create(userDto));
+        verify(userRepository, times(1)).existsByEmail("email@email.com");
+        verify(userRepository, never()).save(any());
+    }
 
 	@Test
 	void findById() {
