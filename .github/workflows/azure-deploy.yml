@@ -1,0 +1,29 @@
+name: Deploy Rest-API
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: docker login
+      env:
+        DOCKER_USER: ${{ secrets.REGISTRY_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: build and push image
+      run: |
+        docker build -t julio16j/user-crud-jdbc:latest .
+        docker push julio16j/user-crud-jdbc:latest
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'user-crud-jdbc'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        images: 'docker.io/julio16j/user-crud-jdbc:latest'
