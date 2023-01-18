@@ -3,6 +3,7 @@ package com.usercrudjdbc.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -109,7 +110,7 @@ public class UserServiceTest {
         UserDto userDto = new UserDto("name", "email@email.com", "password");
         User user = new User(id, "name", "email@email.com", "password");
         when(userRepository.findOne(id)).thenReturn(Optional.of(user));
-        when(userRepository.existsByEmail(userDto.getEmail())).thenReturn(true);
+        when(userRepository.existsByEmailWithNotThisId(anyString(), anyLong())).thenReturn(true);
         assertThrows(BadRequestException.class, () -> userService.update(id, userDto));
     }
 }
