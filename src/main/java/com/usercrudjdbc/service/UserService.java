@@ -52,14 +52,21 @@ public class UserService {
 
     public User update(Long id, UserDto userDto) {
     	User user = findById(id);
-    	validateEmail(userDto.getEmail());
+    	validateEmailByDiferentId(userDto.getEmail(), id);
     	user.setEmail(userDto.getEmail());
     	user.setName(userDto.getName());
     	user.setPassword(encryptPassword(userDto.getPassword()));
         return userRepository.update(user);
     }
     
-    private String encryptPassword(String password) {
+    private void validateEmailByDiferentId(String email, Long id) {
+    	if (userRepository.existsByEmailWithNotThisId(email, id)) {
+    		throw new BadRequestException("Email already is used");
+    	}
+	}
+
+
+	private String encryptPassword(String password) {
     	BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     	String encodedPassword = passwordEncoder.encode(password);
     	return encodedPassword;

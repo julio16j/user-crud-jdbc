@@ -87,4 +87,17 @@ public class JdbcUserRepository implements UserRepository {
             return new User(rs.getLong("id"), rs.getString("name"), rs.getString("email"), rs.getString("password"));
         }
     }
+
+
+	@Override
+	public boolean existsByEmailWithNotThisId(String email, Long id) {
+		String sql = "SELECT COUNT(*) FROM users WHERE email = ? and id != ?";
+        Integer count = jdbcTemplate.query(sql, (ResultSet rs) -> {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        }, new Object[] { email, id } );
+        return count > 0;
+	}
 }
